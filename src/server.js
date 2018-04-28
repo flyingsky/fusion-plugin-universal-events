@@ -9,6 +9,7 @@
 /* eslint-env node */
 import {memoize, createPlugin} from 'fusion-core';
 import type {FusionPlugin, Context} from 'fusion-core';
+import {BodyParserOptionsToken} from 'fusion-tokens';
 
 import Emitter from './emitter.js';
 import type {
@@ -77,10 +78,13 @@ class ScopedEmitter extends Emitter {
 const plugin =
   __NODE__ &&
   createPlugin({
+    deps: {
+      bodyParserOptions: BodyParserOptionsToken.optional,
+    },
     provides: () => new GlobalEmitter(),
     middleware: (deps, globalEmitter) => {
       const bodyParser = require('koa-bodyparser');
-      const parseBody = bodyParser();
+      const parseBody = bodyParser(deps.bodyParserOptions);
       return async function universalEventsMiddleware(ctx, next) {
         const emitter = globalEmitter.from(ctx);
         if (ctx.method === 'POST' && ctx.path === '/_events') {
